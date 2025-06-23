@@ -49,30 +49,6 @@ Este projeto é uma aplicação **React Native** criada com **Expo** que realiza
    npm install @react-navigation/native @react-navigation/native-stack
    npm install axios
    npx expo install react-native-screens react-native-safe-area-context
-   npm install react-native-paper
-   ```
-
-4. Instale o Material Design para React Native (react-native-paper):
-
-   ```bash
-   npm install react-native-paper
-   npx expo install react-native-vector-icons
-   ```
-
-   > **Atenção:**  
-   > A biblioteca `react-native-paper` é usada para os componentes de formulário (TextInput, Button, Text).
-   > Se não instalar, o projeto não irá rodar corretamente.
-
-   Se estiver usando TypeScript, instale também os tipos do React (caso ainda não tenha):
-
-   ```bash
-   npm install --save-dev @types/react
-   ```
-
-5. Após instalar, reinicie o projeto Expo:
-
-   ```bash
-   npx expo start
    ```
 
 ## Como rodar o projeto
@@ -88,7 +64,7 @@ Abra o app no seu emulador ou dispositivo usando o QR Code exibido no terminal.
 - `src/screens` — Telas principais (Listar, Criar, Editar)
 - `src/components` — Componentes reutilizáveis (Formulário, Lista, etc)
 - `src/services` — Serviços para requisições HTTP (Axios)
-- `src/navigation` — Definição das rotas de navegação
+- `src/router` — Definição das rotas de navegação
 
 ## Rotas da Aplicação
 
@@ -122,95 +98,81 @@ axios.delete("http://leoproti.com.br:8004/produtos/1")
 
 Siga as instruções acima para rodar e explorar o projeto no seu celular ou emulador!
 
-import axios from "axios";
+# Expo Router - Navegação no React Native com Expo
 
-export interface Produto {
-  id?: number;
-  nome: string;
-  preco: number;
-}
+O **Expo Router** é uma solução moderna de navegação para projetos React Native criados com Expo. Ele permite criar rotas e navegação de forma semelhante ao Next.js, usando a estrutura de pastas e arquivos para definir as telas do app.
 
-const API_URL = "http://leoproti.com.br:8004/produtos";
+## Como funciona o Expo Router?
 
-const listar = async (): Promise<Produto[]> => {
-  const { data } = await axios.get(API_URL);
-  return data;
-};
+- **Arquivos e pastas dentro da pasta `app/` representam rotas.**
+  - `app/index.tsx` → rota inicial `/`
+  - `app/produtos.tsx` → rota `/produtos`
+  - `app/produtos/[id].tsx` → rota dinâmica `/produtos/123`
+- **Não é necessário configurar stacks manualmente.**
+- **A navegação é feita usando hooks e componentes do próprio Expo Router.**
 
-const obter = async (id: number): Promise<Produto> => {
-  const { data } = await axios.get(`${API_URL}/${id}`);
-  return data;
-};
+## Exemplo de Estrutura
 
-const criar = async (produto: Produto): Promise<Produto> => {
-  const { data } = await axios.post(API_URL, produto);
-  return data;
-};
-
-const atualizar = async (id: number, produto: Produto): Promise<Produto> => {
-  const { data } = await axios.put(`${API_URL}/${id}`, produto);
-  return data;
-};
-
-const excluir = async (id: number): Promise<void> => {
-  await axios.delete(`${API_URL}/${id}`);
-};
-
-export default {
-  listar,
-  obter,
-  criar,
-  atualizar,
-  excluir,
-};
-
-## Bibliotecas para Formulários no React Native
-
-Para facilitar o gerenciamento e validação de formulários, recomenda-se o uso do [react-hook-form](https://react-hook-form.com/):
-
-### Instalação
-
-```bash
-npm install react-hook-form
+```
+app/
+  index.tsx           // Tela inicial
+  produtos.tsx        // Lista de produtos
+  produtos/
+    [id].tsx          // Tela de detalhes/edição de produto
 ```
 
-### Exemplo de uso com React Native Paper
+## Como navegar entre telas
+
+Use o hook `useRouter` do Expo Router:
 
 ```tsx
-import { useForm, Controller } from "react-hook-form";
-import { TextInput, Button } from "react-native-paper";
+import { useRouter } from "expo-router";
 
-function MeuForm() {
-  const { control, handleSubmit } = useForm();
-  const onSubmit = data => console.log(data);
+const router = useRouter();
 
-  return (
-    <>
-      <Controller
-        control={control}
-        name="nome"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            label="Nome"
-            value={value}
-            onChangeText={onChange}
-            mode="outlined"
-          />
-        )}
-      />
-      <Button onPress={handleSubmit(onSubmit)}>Salvar</Button>
-    </>
-  );
-}
+router.push("/produtos"); // Navega para a lista de produtos
+router.push("/produtos/1"); // Navega para o produto de id 1
+router.back(); // Volta para a tela anterior
 ```
 
-### Outras opções
+## Como rodar um projeto com Expo Router
 
-- [Formik](https://formik.org/) — Muito usado em projetos React e React Native.
-- [react-native-form-validator](https://github.com/g6ling/react-native-form-validator) — Validação simples.
-- [yup](https://github.com/jquense/yup) — Schema validation, pode ser usado junto com react-hook-form ou Formik.
+1. Crie o projeto com Expo:
+   ```bash
+   npx create-expo-app@latest app
+   cd app
+   ```
+
+2. Instale o Expo Router:
+   ```bash
+   npm install expo-router
+   ```
+
+3. No arquivo `app.json` ou `app.config.js`, defina o entryPoint:
+   ```json
+   {
+     "expo": {
+       "entryPoint": "./node_modules/expo-router/entry"
+     }
+   }
+   ```
+
+4. Estruture suas telas dentro da pasta `app/` conforme mostrado acima.
+
+5. Rode o projeto normalmente:
+   ```bash
+   npx expo start
+   ```
+
+## Observações
+
+- O arquivo `app/index.tsx` é a tela inicial.
+- Não use `App.tsx` junto com Expo Router, pois o roteamento é feito a partir da pasta `app/`.
+- Para rotas aninhadas e dinâmicas, use subpastas e colchetes (ex: `[id].tsx`).
+
+## Referências
+
+- [Documentação Expo Router](https://expo.github.io/router/docs)
+- [Exemplo oficial](https://github.com/expo/router/tree/main/example)
 
 ---
-
-**Resumo:**  
-Para projetos modernos, recomendo `react-hook-form` para simplicidade e performance.
